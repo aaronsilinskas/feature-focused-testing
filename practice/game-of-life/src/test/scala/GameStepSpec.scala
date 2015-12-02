@@ -9,18 +9,18 @@ class GameStepSpec extends FeatureSpec with Matchers with GivenWhenThen {
 
     scenario("A step in the game applies rules to all living cells.") {
       Given("a grid with live cells")
-      val livingCells = randomCoordinates()
+      val livingCells = randomCells()
       val grid = new Grid(livingCells)
 
       val rules = new Rules() {
-        val liveCellsWithRulesApplied = mutable.Set[Coordinate]()
+        val liveCellsWithRulesApplied = mutable.Set[Cell]()
 
-        override def isLiveCellSurviving(coordinate: Coordinate, liveNeighbors: Int): Boolean = {
-          liveCellsWithRulesApplied += coordinate
+        override def isLiveCellSurviving(cell: Cell, liveNeighbors: Int): Boolean = {
+          liveCellsWithRulesApplied += cell
           true
         }
 
-        override def isDeadCellReviving(coordinate: Coordinate, liveNeighbors: Int): Boolean = {
+        override def isDeadCellReviving(cell: Cell, liveNeighbors: Int): Boolean = {
           false
         }
       }
@@ -35,19 +35,19 @@ class GameStepSpec extends FeatureSpec with Matchers with GivenWhenThen {
 
     scenario("A step in the game applies rules to all dead cells with at least one live neighbor.") {
       Given("a grid with live cells")
-      val livingCells = randomCoordinates()
+      val livingCells = randomCells()
       val deadCellsAroundLiveCells = getDeadNeighbors(livingCells)
       val grid = new Grid(livingCells)
 
       val rules = new Rules() {
-        val deadCellsWithRulesApplied = mutable.Set[Coordinate]()
+        val deadCellsWithRulesApplied = mutable.Set[Cell]()
 
-        override def isLiveCellSurviving(coordinate: Coordinate, liveNeighbors: Int): Boolean = {
+        override def isLiveCellSurviving(cell: Cell, liveNeighbors: Int): Boolean = {
           true
         }
 
-        override def isDeadCellReviving(coordinate: Coordinate, liveNeighbors: Int): Boolean = {
-          deadCellsWithRulesApplied += coordinate
+        override def isDeadCellReviving(cell: Cell, liveNeighbors: Int): Boolean = {
+          deadCellsWithRulesApplied += cell
           false
         }
       }
@@ -60,14 +60,15 @@ class GameStepSpec extends FeatureSpec with Matchers with GivenWhenThen {
       rules.deadCellsWithRulesApplied shouldBe deadCellsAroundLiveCells
     }
 
-    scenario("A step in the game applies all rules simultaneous.") {
+    scenario("A step in the game applies all rules simultaneously.") {
       Given("a grid with live cells grouped so that they have neighbors")
-      val randomGroupingOfLiveCells = randomNeighborhood(randomCoordinate(), 5)
-      val deadNeighbors = getDeadNeighbors(randomGroupingOfLiveCells)
+      val randomGroupingOfLiveCells = randomNeighborhood(randomCell(), 5)
 
       val grid = new Grid(randomGroupingOfLiveCells)
-      val liveNeighborCountsBeforeRules = countNeighbors(grid, randomGroupingOfLiveCells)
-      val deadNeighborCountsBeforeRules = countNeighbors(grid, deadNeighbors)
+      val liveCellNeighborCountsBeforeRules = countLiveNeighbors(grid, randomGroupingOfLiveCells)
+
+      val deadCellsWhereRulesApply = getDeadNeighbors(randomGroupingOfLiveCells)
+      val deadCellNeighborCountsBeforeRules = countLiveNeighbors(grid, deadCellsWhereRulesApply)
 
       And("a rule that all live cells die and their dead neighbors become alive")
       val rules = new InvertCellsRules with NeighborCountTracking
@@ -77,53 +78,53 @@ class GameStepSpec extends FeatureSpec with Matchers with GivenWhenThen {
       val nextGrid = game.step(grid)
 
       Then("live neighbor counts reflect the original counts and not any cell deaths or births")
-      rules.liveNeighborCounts shouldBe liveNeighborCountsBeforeRules
-      rules.deadNeighborCounts shouldBe deadNeighborCountsBeforeRules
+      rules.liveNeighborCounts shouldBe liveCellNeighborCountsBeforeRules
+      rules.deadNeighborCounts shouldBe deadCellNeighborCountsBeforeRules
 
       And("all live cells are now dead and dead neighbors are now alive")
       nextGrid.liveCells.intersect(randomGroupingOfLiveCells) shouldBe empty
-      nextGrid.liveCells shouldBe deadNeighbors
+      nextGrid.liveCells shouldBe deadCellsWhereRulesApply
     }
 
   }
 
   private class InvertCellsRules extends Rules {
 
-    override def isLiveCellSurviving(coordinate: Coordinate, liveNeighbors: Int): Boolean = {
+    override def isLiveCellSurviving(cell: Cell, liveNeighbors: Int): Boolean = {
       false
     }
 
-    override def isDeadCellReviving(coordinate: Coordinate, liveNeighbors: Int): Boolean = {
+    override def isDeadCellReviving(cell: Cell, liveNeighbors: Int): Boolean = {
       true
     }
   }
 
   private trait NeighborCountTracking extends Rules {
-    val liveNeighborCounts = mutable.Map[Coordinate, Int]()
-    val deadNeighborCounts = mutable.Map[Coordinate, Int]()
+    val liveNeighborCounts = mutable.Map[Cell, Int]()
+    val deadNeighborCounts = mutable.Map[Cell, Int]()
 
-    abstract override def isLiveCellSurviving(coordinate: Coordinate, liveNeighbors: Int): Boolean = {
-      liveNeighborCounts += (coordinate -> liveNeighbors)
-      super.isLiveCellSurviving(coordinate, liveNeighbors)
+    abstract override def isLiveCellSurviving(cell: Cell, liveNeighbors: Int): Boolean = {
+      liveNeighborCounts += (cell -> liveNeighbors)
+      super.isLiveCellSurviving(cell, liveNeighbors)
     }
 
-    abstract override def isDeadCellReviving(coordinate: Coordinate, liveNeighbors: Int): Boolean = {
-      deadNeighborCounts += (coordinate -> liveNeighbors)
-      super.isDeadCellReviving(coordinate, liveNeighbors)
+    abstract override def isDeadCellReviving(cell: Cell, liveNeighbors: Int): Boolean = {
+      deadNeighborCounts += (cell -> liveNeighbors)
+      super.isDeadCellReviving(cell, liveNeighbors)
     }
   }
 
-  private def countNeighbors(grid: Grid, coordinates: Set[Coordinate]): Map[Coordinate, Int] = {
-    coordinates.map { coordinate =>
-      coordinate -> grid.countLiveNeighbors(coordinate)
+  private def countLiveNeighbors(grid: Grid, cells: Set[Cell]): Map[Cell, Int] = {
+    cells.map { cell =>
+      cell -> grid.countLiveNeighbors(cell)
     }.toMap
   }
 
-  private def getDeadNeighbors(liveCoordinates: Set[Coordinate]): Set[Coordinate] = {
+  private def getDeadNeighbors(liveCells: Set[Cell]): Set[Cell] = {
     for {
-      liveCoordinate <- liveCoordinates
-      neighbor <- liveCoordinate.neighbors
-      if !liveCoordinates.contains(neighbor)
+      liveCell <- liveCells
+      neighbor <- liveCell.neighbors
+      if !liveCells.contains(neighbor)
     } yield neighbor
   }
 }

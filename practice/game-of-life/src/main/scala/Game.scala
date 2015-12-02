@@ -3,15 +3,15 @@ import scala.collection.mutable
 class Game(rules: Rules) {
 
   def step(grid: Grid): Grid = {
-    val survivingCells = mutable.Set[Coordinate]()
+    val survivingCells = mutable.Set[Cell]()
 
-    for (coordinate <- grid.liveCells) {
-      if (rules.isLiveCellSurviving(coordinate, grid.countLiveNeighbors(coordinate))) {
-        survivingCells += coordinate
+    for (cell <- grid.liveCells) {
+      if (rules.isLiveCellSurviving(cell, grid.countLiveNeighbors(cell))) {
+        survivingCells += cell
       }
 
       val revivedDeadNeighbors = for {
-        neighbor <- coordinate.neighbors
+        neighbor <- cell.neighbors
         if !grid.isAlive(neighbor)
         if rules.isDeadCellReviving(neighbor, grid.countLiveNeighbors(neighbor))
       } yield neighbor
@@ -23,7 +23,7 @@ class Game(rules: Rules) {
 }
 
 trait Rules {
-  def isLiveCellSurviving(coordinate: Coordinate, liveNeighbors: Int): Boolean
+  def isLiveCellSurviving(cell: Cell, liveNeighbors: Int): Boolean
 
-  def isDeadCellReviving(coordinate: Coordinate, liveNeighbors: Int): Boolean
+  def isDeadCellReviving(cell: Cell, liveNeighbors: Int): Boolean
 }

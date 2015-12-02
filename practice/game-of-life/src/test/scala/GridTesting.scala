@@ -3,39 +3,39 @@ import scala.util.Random
 
 object GridTesting {
 
-  def randomCoordinate(): Coordinate = {
-    new Coordinate(Random.nextInt(), Random.nextInt())
+  def randomCell(): Cell = {
+    new Cell(Random.nextInt(), Random.nextInt())
   }
 
   @tailrec
-  def randomCoordinates(count: Int = 1000, excluding: Set[Coordinate] = Set.empty, including: Set[Coordinate] = Set.empty): Set[Coordinate] = {
+  def randomCells(count: Int = 1000, excluding: Set[Cell] = Set.empty, including: Set[Cell] = Set.empty): Set[Cell] = {
     if (count == 0) {
       including
     } else {
-      val c = randomCoordinate()
+      val c = randomCell()
 
       if (excluding.contains(c) || including.contains(c)) {
-        randomCoordinates(count, excluding, including)
+        randomCells(count, excluding, including)
       } else {
-        randomCoordinates(count - 1, excluding, including + c)
+        randomCells(count - 1, excluding, including + c)
       }
     }
   }
 
-  def getNeighborCoordinates(c: Coordinate): Set[Coordinate] = {
+  def getNeighborCells(cell: Cell): Set[Cell] = {
     Set(
-      Coordinate(c.x - 1, c.y - 1), Coordinate(c.x, c.y - 1), Coordinate(c.x + 1, c.y - 1),
-      Coordinate(c.x - 1, c.y), Coordinate(c.x + 1, c.y),
-      Coordinate(c.x - 1, c.y + 1), Coordinate(c.x, c.y + 1), Coordinate(c.x + 1, c.y + 1)
+      Cell(cell.x - 1, cell.y - 1), Cell(cell.x, cell.y - 1), Cell(cell.x + 1, cell.y - 1),
+      Cell(cell.x - 1, cell.y), Cell(cell.x + 1, cell.y),
+      Cell(cell.x - 1, cell.y + 1), Cell(cell.x, cell.y + 1), Cell(cell.x + 1, cell.y + 1)
     )
   }
 
-  def randomNeighborhood(seed: Coordinate, recursiveDepth: Int): Set[Coordinate] = {
+  def randomNeighborhood(seed: Cell, recursiveDepth: Int, neighborsToRecurse:Int = 3): Set[Cell] = {
     if (recursiveDepth == 0) {
       Set(seed)
     } else {
-      val allNeighbors = getNeighborCoordinates(seed)
-      val randomSubsetOfNeighbors = Random.shuffle(allNeighbors).take(3)
+      val allNeighbors = getNeighborCells(seed)
+      val randomSubsetOfNeighbors = Random.shuffle(allNeighbors).take(neighborsToRecurse)
       randomSubsetOfNeighbors.flatMap { neighbor =>
         randomNeighborhood(neighbor, recursiveDepth - 1)
       }
