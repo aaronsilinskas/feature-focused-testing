@@ -1,24 +1,24 @@
 import scala.collection.mutable
 
-case class Coordinate(x: Int, y: Int) {
-  def neighbors: Set[Coordinate] = {
-    val neighborCoordinates = for {
+case class Cell(x: Int, y: Int) {
+  def neighbors: Set[Cell] = {
+    val neighborCells = for {
       neighborX <- x - 1 to x + 1
       neighborY <- y - 1 to y + 1
       if !(neighborX == x && neighborY == y)
-    } yield Coordinate(neighborX, neighborY)
+    } yield Cell(neighborX, neighborY)
 
-    neighborCoordinates.toSet
+    neighborCells.toSet
   }
 }
 
-class Grid(val liveCells: Set[Coordinate]) {
+class Grid(val liveCells: Set[Cell]) {
 
-  def isAlive(c: Coordinate): Boolean = {
+  def isAlive(c: Cell): Boolean = {
     liveCells.contains(c)
   }
 
-  def countLiveNeighbors(c: Coordinate): Int = {
+  def countLiveNeighbors(c: Cell): Int = {
     c.neighbors.count(isAlive)
   }
 
@@ -33,12 +33,12 @@ class Grid(val liveCells: Set[Coordinate]) {
 object Grid {
 
   def fromString(encodedGrid: String): Grid = {
-    val liveCells = mutable.Set[Coordinate]()
+    val liveCells = mutable.Set[Cell]()
 
     for ((row, y) <- encodedGrid.split("\n").zipWithIndex) {
       for ((cell, x) <- row.zipWithIndex) {
         if (cell == '@') {
-          liveCells += Coordinate(x, y)
+          liveCells += Cell(x, y)
         }
       }
     }
