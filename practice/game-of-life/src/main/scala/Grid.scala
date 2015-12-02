@@ -13,12 +13,12 @@ case class Cell(x: Int, y: Int) {
 
 class Grid(val liveCells: Set[Cell]) {
 
-  def isAlive(c: Cell): Boolean = {
-    liveCells.contains(c)
+  def isAlive(cell: Cell): Boolean = {
+    liveCells.contains(cell)
   }
 
-  def countLiveNeighbors(c: Cell): Int = {
-    c.neighbors.count(isAlive)
+  def countLiveNeighbors(cell: Cell): Int = {
+    cell.neighbors.count(isAlive)
   }
 
   override def equals(obj: Any): Boolean = {

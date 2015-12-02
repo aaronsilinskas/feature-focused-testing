@@ -60,14 +60,15 @@ class GameStepSpec extends FeatureSpec with Matchers with GivenWhenThen {
       rules.deadCellsWithRulesApplied shouldBe deadCellsAroundLiveCells
     }
 
-    scenario("A step in the game applies all rules simultaneous.") {
+    scenario("A step in the game applies all rules simultaneously.") {
       Given("a grid with live cells grouped so that they have neighbors")
       val randomGroupingOfLiveCells = randomNeighborhood(randomCell(), 5)
-      val deadNeighbors = getDeadNeighbors(randomGroupingOfLiveCells)
 
       val grid = new Grid(randomGroupingOfLiveCells)
-      val liveNeighborCountsBeforeRules = countNeighbors(grid, randomGroupingOfLiveCells)
-      val deadNeighborCountsBeforeRules = countNeighbors(grid, deadNeighbors)
+      val liveCellNeighborCountsBeforeRules = countLiveNeighbors(grid, randomGroupingOfLiveCells)
+
+      val deadCellsWhereRulesApply = getDeadNeighbors(randomGroupingOfLiveCells)
+      val deadCellNeighborCountsBeforeRules = countLiveNeighbors(grid, deadCellsWhereRulesApply)
 
       And("a rule that all live cells die and their dead neighbors become alive")
       val rules = new InvertCellsRules with NeighborCountTracking
@@ -77,12 +78,12 @@ class GameStepSpec extends FeatureSpec with Matchers with GivenWhenThen {
       val nextGrid = game.step(grid)
 
       Then("live neighbor counts reflect the original counts and not any cell deaths or births")
-      rules.liveNeighborCounts shouldBe liveNeighborCountsBeforeRules
-      rules.deadNeighborCounts shouldBe deadNeighborCountsBeforeRules
+      rules.liveNeighborCounts shouldBe liveCellNeighborCountsBeforeRules
+      rules.deadNeighborCounts shouldBe deadCellNeighborCountsBeforeRules
 
       And("all live cells are now dead and dead neighbors are now alive")
       nextGrid.liveCells.intersect(randomGroupingOfLiveCells) shouldBe empty
-      nextGrid.liveCells shouldBe deadNeighbors
+      nextGrid.liveCells shouldBe deadCellsWhereRulesApply
     }
 
   }
@@ -113,7 +114,7 @@ class GameStepSpec extends FeatureSpec with Matchers with GivenWhenThen {
     }
   }
 
-  private def countNeighbors(grid: Grid, cells: Set[Cell]): Map[Cell, Int] = {
+  private def countLiveNeighbors(grid: Grid, cells: Set[Cell]): Map[Cell, Int] = {
     cells.map { cell =>
       cell -> grid.countLiveNeighbors(cell)
     }.toMap

@@ -22,20 +22,20 @@ object GridTesting {
     }
   }
 
-  def getNeighborCells(c: Cell): Set[Cell] = {
+  def getNeighborCells(cell: Cell): Set[Cell] = {
     Set(
-      Cell(c.x - 1, c.y - 1), Cell(c.x, c.y - 1), Cell(c.x + 1, c.y - 1),
-      Cell(c.x - 1, c.y), Cell(c.x + 1, c.y),
-      Cell(c.x - 1, c.y + 1), Cell(c.x, c.y + 1), Cell(c.x + 1, c.y + 1)
+      Cell(cell.x - 1, cell.y - 1), Cell(cell.x, cell.y - 1), Cell(cell.x + 1, cell.y - 1),
+      Cell(cell.x - 1, cell.y), Cell(cell.x + 1, cell.y),
+      Cell(cell.x - 1, cell.y + 1), Cell(cell.x, cell.y + 1), Cell(cell.x + 1, cell.y + 1)
     )
   }
 
-  def randomNeighborhood(seed: Cell, recursiveDepth: Int): Set[Cell] = {
+  def randomNeighborhood(seed: Cell, recursiveDepth: Int, neighborsToRecurse:Int = 3): Set[Cell] = {
     if (recursiveDepth == 0) {
       Set(seed)
     } else {
       val allNeighbors = getNeighborCells(seed)
-      val randomSubsetOfNeighbors = Random.shuffle(allNeighbors).take(3)
+      val randomSubsetOfNeighbors = Random.shuffle(allNeighbors).take(neighborsToRecurse)
       randomSubsetOfNeighbors.flatMap { neighbor =>
         randomNeighborhood(neighbor, recursiveDepth - 1)
       }

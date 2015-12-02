@@ -15,10 +15,10 @@ class GridSpec extends FeatureSpec with Matchers with GivenWhenThen {
       val grid = new Grid(livingCells)
 
       Then("the grid gives the correct state for each cell")
-      livingCells foreach { c =>
+      for (c <- livingCells) {
         grid.isAlive(c) shouldBe true
       }
-      deadCells foreach { c =>
+      for (c <- deadCells) {
         grid.isAlive(c) shouldBe false
       }
     }
@@ -40,7 +40,7 @@ class GridSpec extends FeatureSpec with Matchers with GivenWhenThen {
       }
 
       Then("the correct live neighbor count is given for each cell")
-      testScenarios foreach { s =>
+      for (s <- testScenarios) {
         s.grid.countLiveNeighbors(s.cell) shouldBe s.expectedLiveNeighborCount
       }
     }
