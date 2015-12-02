@@ -1,4 +1,3 @@
-import scala.collection.mutable
 
 case class Cell(x: Int, y: Int) {
   def neighbors: Set[Cell] = {
@@ -29,21 +28,3 @@ class Grid(val liveCells: Set[Cell]) {
     }
   }
 }
-
-object Grid {
-
-  def fromString(encodedGrid: String): Grid = {
-    val liveCells = mutable.Set[Cell]()
-
-    for ((row, y) <- encodedGrid.split("\n").zipWithIndex) {
-      for ((cell, x) <- row.zipWithIndex) {
-        if (cell == '@') {
-          liveCells += Cell(x, y)
-        }
-      }
-    }
-
-    new Grid(liveCells.toSet)
-  }
-}
-

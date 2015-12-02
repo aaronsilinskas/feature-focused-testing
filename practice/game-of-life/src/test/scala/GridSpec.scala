@@ -45,28 +45,6 @@ class GridSpec extends FeatureSpec with Matchers with GivenWhenThen {
       }
     }
 
-    scenario("A grid can be initialized from a string representation.") {
-      Given("a string of @ representing live cells and _ representing dead cells")
-      val gridData = randomBooleanSquare(10, 10)
-      val gridRows = gridData map { row =>
-        val rowAsSymbols = row map { alive =>
-          if (alive) "@" else "_"
-        }
-        rowAsSymbols.mkString("")
-      }
-      val gridText = gridRows.mkString("\n")
-
-      When("the grid is initialized")
-      val grid = Grid.fromString(gridText)
-
-      Then("the grid matches the string representation")
-      for ((row, y) <- gridData.zipWithIndex) {
-        for ((cellIsAlive, x) <- row.zipWithIndex) {
-          grid.isAlive(Cell(x, y)) shouldBe cellIsAlive
-        }
-      }
-    }
-
     scenario("Grids can be compared for equality.") {
       val cells = randomCells()
       val matchingCells = Set() ++ cells
