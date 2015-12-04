@@ -1,9 +1,9 @@
-import GridTesting._
+
 import org.scalatest.{FeatureSpec, GivenWhenThen, Matchers}
 
 import scala.util.Random
 
-class GridSpec extends FeatureSpec with Matchers with GivenWhenThen {
+class GridSpec extends FeatureSpec with Matchers with GivenWhenThen with GridFixture {
 
   feature("A 2D grid of living and dead cells.") {
     scenario("The grid is 32 bits, two dimensional, and holds living and dead cells.") {
@@ -41,7 +41,8 @@ class GridSpec extends FeatureSpec with Matchers with GivenWhenThen {
 
       Then("the correct live neighbor count is given for each cell")
       for (s <- testScenarios) {
-        s.grid.countLiveNeighbors(s.cell) shouldBe s.expectedLiveNeighborCount
+        import s._
+        grid.countLiveNeighbors(cell) shouldBe expectedLiveNeighborCount
       }
     }
 

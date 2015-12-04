@@ -1,8 +1,7 @@
 
-import GridTesting._
 import org.scalatest._
 
-class RulesSpec extends FeatureSpec with Matchers {
+class RulesSpec extends FeatureSpec with Matchers with GridFixture {
 
   val rules = new DefaultRules()
   val anyCell = randomCell()
