@@ -21,9 +21,3 @@ class Game(rules: Rules) {
     new Grid(survivingCells.toSet)
   }
 }
-
-trait Rules {
-  def isLiveCellSurviving(cell: Cell, liveNeighbors: Int): Boolean
-
-  def isDeadCellReviving(cell: Cell, liveNeighbors: Int): Boolean
-}

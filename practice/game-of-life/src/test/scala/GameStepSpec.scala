@@ -1,9 +1,9 @@
-import GridTesting._
+
 import org.scalatest.{FeatureSpec, GivenWhenThen, Matchers}
 
 import scala.collection.mutable
 
-class GameStepSpec extends FeatureSpec with Matchers with GivenWhenThen {
+class GameStepSpec extends FeatureSpec with Matchers with GivenWhenThen with GridFixture {
 
   feature("Each game step applies the rules to all applicable cells.") {
 
@@ -65,10 +65,10 @@ class GameStepSpec extends FeatureSpec with Matchers with GivenWhenThen {
       val randomGroupingOfLiveCells = randomNeighborhood(randomCell(), 5)
 
       val grid = new Grid(randomGroupingOfLiveCells)
-      val liveCellNeighborCountsBeforeRules = countLiveNeighbors(grid, randomGroupingOfLiveCells)
+      val liveCellLiveNeighborCountsBeforeRules = countLiveNeighbors(grid, randomGroupingOfLiveCells)
 
       val deadCellsWhereRulesApply = getDeadNeighbors(randomGroupingOfLiveCells)
-      val deadCellNeighborCountsBeforeRules = countLiveNeighbors(grid, deadCellsWhereRulesApply)
+      val deadCellLiveNeighborCountsBeforeRules = countLiveNeighbors(grid, deadCellsWhereRulesApply)
 
       And("a rule that all live cells die and their dead neighbors become alive")
       val rules = new InvertCellsRules with NeighborCountTracking
@@ -78,8 +78,8 @@ class GameStepSpec extends FeatureSpec with Matchers with GivenWhenThen {
       val nextGrid = game.step(grid)
 
       Then("live neighbor counts reflect the original counts and not any cell deaths or births")
-      rules.liveNeighborCounts shouldBe liveCellNeighborCountsBeforeRules
-      rules.deadNeighborCounts shouldBe deadCellNeighborCountsBeforeRules
+      rules.liveCellLiveNeighborCounts shouldBe liveCellLiveNeighborCountsBeforeRules
+      rules.deadCellLiveNeighborCounts shouldBe deadCellLiveNeighborCountsBeforeRules
 
       And("all live cells are now dead and dead neighbors are now alive")
       nextGrid.liveCells.intersect(randomGroupingOfLiveCells) shouldBe empty
@@ -100,16 +100,16 @@ class GameStepSpec extends FeatureSpec with Matchers with GivenWhenThen {
   }
 
   private trait NeighborCountTracking extends Rules {
-    val liveNeighborCounts = mutable.Map[Cell, Int]()
-    val deadNeighborCounts = mutable.Map[Cell, Int]()
+    val liveCellLiveNeighborCounts = mutable.Map[Cell, Int]()
+    val deadCellLiveNeighborCounts = mutable.Map[Cell, Int]()
 
     abstract override def isLiveCellSurviving(cell: Cell, liveNeighbors: Int): Boolean = {
-      liveNeighborCounts += (cell -> liveNeighbors)
+      liveCellLiveNeighborCounts += (cell -> liveNeighbors)
       super.isLiveCellSurviving(cell, liveNeighbors)
     }
 
     abstract override def isDeadCellReviving(cell: Cell, liveNeighbors: Int): Boolean = {
-      deadNeighborCounts += (cell -> liveNeighbors)
+      deadCellLiveNeighborCounts += (cell -> liveNeighbors)
       super.isDeadCellReviving(cell, liveNeighbors)
     }
   }
